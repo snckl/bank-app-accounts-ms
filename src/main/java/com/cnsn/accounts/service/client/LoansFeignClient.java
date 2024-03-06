@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient("loans") // connects to cards api in runtime which uses name in eureka
+@FeignClient(value = "loans",fallback = LoansFallback.class) // connects to cards api in runtime which uses name in eureka
 public interface LoansFeignClient {
 
     // method input param,return param,method access type should be same as in cards api

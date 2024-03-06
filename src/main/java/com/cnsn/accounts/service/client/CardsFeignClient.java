@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient("cards") // connects to cards api in runtime
+@FeignClient(value = "cards",fallback = CardsFallback.class) // connects to cards api in runtime
 public interface CardsFeignClient {
 
     // method input param,return param,method access type should be same as in cards api

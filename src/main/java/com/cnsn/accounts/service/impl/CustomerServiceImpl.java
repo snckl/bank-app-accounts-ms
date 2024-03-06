@@ -15,6 +15,7 @@ import com.cnsn.accounts.repository.AccountsRepository;
 import com.cnsn.accounts.repository.CustomerRepository;
 import com.cnsn.accounts.service.ICustomerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,9 @@ public class CustomerServiceImpl implements ICustomerService {
 
     private final AccountsRepository accountsRepository;
     private final CustomerRepository customerRepository;
+    @Qualifier("com.cnsn.accounts.service.client.CardsFeignClient")
     private final CardsFeignClient cardsFeignClient;
+    @Qualifier("com.cnsn.accounts.service.client.LoansFeignClient")
     private final LoansFeignClient loansFeignClient;
 
     @Override
@@ -43,9 +46,9 @@ public class CustomerServiceImpl implements ICustomerService {
         customerDetailsDto.setAccountsDto(AccountsMapper.mapToAccountsDto(accounts,new AccountsDto()));
 
         ResponseEntity<LoansDto> loansDtoResponseEntity = loansFeignClient.fetchLoanDetails(mobileNumber,correlationId);
-        customerDetailsDto.setLoansDto(loansDtoResponseEntity.getBody());
+        if(loansDtoResponseEntity != null) customerDetailsDto.setLoansDto(loansDtoResponseEntity.getBody());
         ResponseEntity<CardsDto> cardsDtoResponseEntity = cardsFeignClient.fetchCardDetails(mobileNumber,correlationId);
-        customerDetailsDto.setCardsDto(cardsDtoResponseEntity.getBody());
+        if(cardsDtoResponseEntity != null) customerDetailsDto.setCardsDto(cardsDtoResponseEntity.getBody());
 
         return customerDetailsDto;
     }
