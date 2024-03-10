@@ -75,5 +75,29 @@ resilience4j:
         failure-rate-threshold: 50
         wait-duration-in-open-state:
           seconds: 10
+  retry:
+    configs:
+      default:
+        max-attempts: 3                  # max attempt
+        wait-duration:
+          seconds: 0.1                   # start wait duration
+        exponential-max-wait-duration:
+          seconds: 0.5                     # max wait duration
+        enable-exponential-backoff: true # enable multiplying duration in every retry
+        exponential-backoff-multiplier: 2 # Multiply wait duration by 2 in every step
+        ignore-exceptions:
+          - java.lang.NullPointerException
+        # retry-exceptions:
+        #  - java.util.concurrent.TimeoutException # while using retry exception we don't have to use ignore exceptions
+  ratelimiter:
+    configs:
+      default:
+        timeout-duration:
+          seconds: 1
+        limit-refresh-period:
+          seconds: 5
+        limit-for-period: 1
+
+
 
 

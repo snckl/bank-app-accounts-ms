@@ -6,6 +6,8 @@ import com.cnsn.accounts.dto.CustomerDto;
 import com.cnsn.accounts.dto.ErrorResponseDto;
 import com.cnsn.accounts.dto.ResponseDto;
 import com.cnsn.accounts.service.IAccountsService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -73,6 +75,7 @@ public class AccountsController {
               responseCode = "200",
               description = "HTTP Status OK"
       )
+      @Retry(name = "fetchAccountDetails",fallbackMethod = "fetchAccountDetailsFallBack")
       @GetMapping("/fetch")
       public ResponseEntity<CustomerDto> fetchAccountDetails(@RequestParam String mobileNumber){
             CustomerDto customerDto = iAccountsService.fetchAccount(mobileNumber);
@@ -80,7 +83,11 @@ public class AccountsController {
                     status(HttpStatus.OK)
                     .body(customerDto);
       }
-
+      public ResponseEntity<CustomerDto> fetchAccountDetailsFallBack(@RequestParam String mobileNumber,Throwable throwable){
+            return ResponseEntity.
+                    status(HttpStatus.OK)
+                    .body(null);
+      }
       @Operation(summary = "Update account REST API",
               description = "Updates customer and account with input of customerDto"
       )
@@ -176,11 +183,11 @@ public class AccountsController {
                       )
               )
       })
-      @GetMapping("/java-version")
-      public ResponseEntity<String> getContactInfo(){
+      @GetMapping("/contact")
+      public ResponseEntity<AccountsContactInfoDto> getContactInfo(){
             return ResponseEntity.
                     status(HttpStatus.OK)
-                    .body(environment.getProperty("MAVEN_HOME"));
+                    .body(accountsContactInfoDto);
       }
 
       @Operation(summary = "Contact info REST API",
@@ -198,10 +205,17 @@ public class AccountsController {
                       )
               )
       })
-      @GetMapping("/contact")
-      public ResponseEntity<AccountsContactInfoDto> getJavaVersion(){
+      @RateLimiter(name = "getJavaVersion",fallbackMethod = "getJavaVersionFallBack")
+      @GetMapping("/java-version")
+      public ResponseEntity<String> getJavaVersion(){
             return ResponseEntity.
                     status(HttpStatus.OK)
-                    .body(accountsContactInfoDto);
+                    .body(environment.getProperty("MAVEN_HOME"));
+      }
+
+      public ResponseEntity<String> getJavaVersionFallBack(Throwable throwable){
+            return ResponseEntity.
+                    status(HttpStatus.OK)
+                    .body("Java 17");
       }
 }
